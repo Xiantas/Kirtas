@@ -34,7 +34,7 @@ fn main() -> Result<(), ()> {
     app_result
 }
 
-/// This struct holds the current state of the app. In particular, it has the `todo_list` field
+/// This struct holds the current state of the app. In particular, it has the `file_list` field
 /// which is a wrapper around `ListState`. Keeping track of the state lets us render the
 /// associated widget with its state and have access to features such as natural scrolling.
 ///
@@ -42,10 +42,10 @@ fn main() -> Result<(), ()> {
 /// the drawing logic for items on how to specify the highlighting style for selected items.
 struct App {
     should_exit: bool,
-    todo_list: TodoList,
+    file_list: FileList,
 }
 
-struct TodoList {
+struct FileList {
     items: Vec<TodoItem>,
     state: ListState,
 }
@@ -67,7 +67,7 @@ impl App {
     fn new(path: &str) -> Self {
         Self {
             should_exit: false,
-            todo_list: TodoList {
+            file_list: FileList {
                 items: list_files(&path),
                 state: ListState::default(),
             },
@@ -99,41 +99,41 @@ impl App {
             KeyCode::Char('k') | KeyCode::Up => self.select_previous(),
             KeyCode::Char('g') | KeyCode::Home => self.select_first(),
             KeyCode::Char('G') | KeyCode::End => self.select_last(),
-            KeyCode::Char('l') | KeyCode::Right | KeyCode::Enter => {
-                self.toggle_status();
-            }
+            // KeyCode::Char('l') | KeyCode::Right | KeyCode::Enter => {
+            //     self.toggle_status();
+            // }
             _ => {}
         }
     }
 
     fn select_none(&mut self) {
-        self.todo_list.state.select(None);
+        self.file_list.state.select(None);
     }
 
     fn select_next(&mut self) {
-        self.todo_list.state.select_next();
+        self.file_list.state.select_next();
     }
     fn select_previous(&mut self) {
-        self.todo_list.state.select_previous();
+        self.file_list.state.select_previous();
     }
 
     fn select_first(&mut self) {
-        self.todo_list.state.select_first();
+        self.file_list.state.select_first();
     }
 
     fn select_last(&mut self) {
-        self.todo_list.state.select_last();
+        self.file_list.state.select_last();
     }
 
-    /// Changes the status of the selected list item
-    fn toggle_status(&mut self) {
-        if let Some(i) = self.todo_list.state.selected() {
-            self.todo_list.items[i].status = match self.todo_list.items[i].status {
-                Status::Completed => Status::Todo,
-                Status::Todo => Status::Completed,
-            }
-        }
-    }
+    // Changes the status of the selected list item
+    // fn toggle_status(&mut self) {
+    //     if let Some(i) = self.file_list.state.selected() {
+    //         self.file_list.items[i].status = match self.file_list.items[i].status {
+    //             Status::Completed => Status::Todo,
+    //             Status::Todo => Status::Completed,
+    //         }
+    //     }
+    // }
 }
 
 impl Widget for &mut App {
@@ -180,7 +180,7 @@ impl App {
 
         // Iterate through all elements in the `items` and stylize them.
         let items: Vec<ListItem> = self
-            .todo_list
+            .file_list
             .items
             .iter()
             .enumerate()
@@ -199,15 +199,15 @@ impl App {
 
         // We need to disambiguate this trait method as both `Widget` and `StatefulWidget` share the
         // same method name `render`.
-        StatefulWidget::render(list, area, buf, &mut self.todo_list.state);
+        StatefulWidget::render(list, area, buf, &mut self.file_list.state);
     }
 
     fn render_selected_item(&self, area: Rect, buf: &mut Buffer) {
         // We get the info depending on the item's state.
-        let info = if let Some(i) = self.todo_list.state.selected() {
-            match self.todo_list.items[i].status {
-                Status::Completed => format!("✓ DONE: {}", self.todo_list.items[i].info),
-                Status::Todo => format!("☐ TODO: {}", self.todo_list.items[i].info),
+        let info = if let Some(i) = self.file_list.state.selected() {
+            match self.file_list.items[i].status {
+                Status::Completed => format!("✓ DONE: {}", self.file_list.items[i].info),
+                Status::Todo => format!("☐ TODO: {}", self.file_list.items[i].info),
             }
         } else {
             "Nothing selected...".to_string()
